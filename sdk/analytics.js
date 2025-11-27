@@ -1,7 +1,9 @@
 (function (window) {
     class Analytics {
         constructor() {
-            this.endpoint = 'http://localhost:5000/api/track'; // Default
+            this.endpoint = 'https://analytics-platform-dzkr.onrender.com/api/track';
+
+            // this.endpoint = 'http://localhost:5000/api/track'; // Default
             this.sessionId = this.getSessionId();
         }
 
