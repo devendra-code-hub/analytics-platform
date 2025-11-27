@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Demo Site</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+        .card { border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; }
+        button { padding: 0.5rem 1rem; cursor: pointer; background: #4f46e5; color: white; border: none; border-radius: 4px; margin-right: 0.5rem; }
+        button:hover { background: #4338ca; }
+        button.secondary { background: #e5e7eb; color: #374151; }
+        button.secondary:hover { background: #d1d5db; }
+    </style>
+</head>
+<body>
+    <h1>Analytics Demo Site</h1>
+    <p>This page simulates a real website to test the analytics SDK.</p>
+
+    <div class="card">
+        <h2>User Actions</h2>
+        <button onclick="Analytics.track('signup_click')">Sign Up Click</button>
+        <button onclick="Analytics.track('signup_success', { plan: 'pro' })">Sign Up Success</button>
+        <button class="secondary" onclick="Analytics.track('add_to_cart', { item: 'shoes', price: 50 })">Add to Cart</button>
+        <button class="secondary" onclick="Analytics.track('purchase', { amount: 50 })">Purchase</button>
+    </div>
+
+    <script src="../sdk/analytics.js"></script>
+    <script>
+        // Initialize SDK
+        Analytics.init({ endpoint: 'http://localhost:5000/api/track' });
+        
+        // Track page view
+        Analytics.pageView();
+    </script>
+</body>
+</html>
