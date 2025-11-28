@@ -1,7 +1,8 @@
 (function (window) {
     class Analytics {
         constructor() {
-            this.endpoint = 'https://analytics-platform-dzkr.onrender.com/api/track';
+           this.endpoint = "https://analytics-platform-dzkr.onrender.com/api/track";
+
             this.sessionId = this.getSessionId();
             this.cheatCount = 0;
         }
