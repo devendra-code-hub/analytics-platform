@@ -2,60 +2,110 @@
     class Analytics {
         constructor() {
             this.endpoint = 'https://analytics-platform-dzkr.onrender.com/api/track';
-
-            // this.endpoint = 'http://localhost:5000/api/track'; // Default
             this.sessionId = this.getSessionId();
+            this.cheatCount = 0;
         }
 
         init(options = {}) {
             if (options.endpoint) {
                 this.endpoint = options.endpoint;
             }
-            console.log('Analytics initialized with session:', this.sessionId);
+
+            console.log("[Analytics] Initialized:", this.sessionId);
+            this.setupEventListeners();
         }
 
         getSessionId() {
-            let sessionId = localStorage.getItem('analytics_session_id');
-            if (!sessionId) {
-                sessionId = 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now();
-                localStorage.setItem('analytics_session_id', sessionId);
+            let id = localStorage.getItem("analytics_session_id");
+            if (!id) {
+                id = "sess_" + Math.random().toString(36).substr(2, 9) + "_" + Date.now();
+                localStorage.setItem("analytics_session_id", id);
             }
-            return sessionId;
+            return id;
         }
 
-        async track(eventName, data = {}) {
+        async track(event, data = {}) {
             const payload = {
-                event: eventName,
-                data: {
-                    ...data,
-                    sessionId: this.sessionId,
-                    url: window.location.href,
-                    referrer: document.referrer,
-                    userAgent: navigator.userAgent,
-                    timestamp: new Date().toISOString()
-                }
+                event,
+                data,
+                sessionId: this.sessionId,
+                url: window.location.href,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
             };
 
             try {
                 await fetch(this.endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
                 });
-                console.log(`[Analytics] Tracked: ${eventName}`);
+                console.log("[Analytics] Event:", event, payload);
             } catch (err) {
-                console.error('[Analytics] Error tracking event:', err);
+                console.error("[Analytics] Error sending event:", err);
             }
         }
 
-        pageView() {
-            this.track('page_view');
+        flagCheat(reason) {
+            this.cheatCount++;
+
+            this.track("cheat_detected", {
+                reason,
+                cheatCount: this.cheatCount
+            });
+
+            if (this.cheatCount >= 3) {
+                alert("⚠ Cheating detected multiple times! Your quiz may be disqualified.");
+            }
+        }
+
+        setupEventListeners() {
+            // -------- TAB SWITCHING ----------
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden) {
+                    this.flagCheat("tab_hidden");
+                } else {
+                    this.track("tab_visible");
+                }
+            });
+
+            // -------- WINDOW BLUR & FOCUS ----------
+            window.addEventListener("blur", () => {
+                this.flagCheat("window_blur");
+            });
+
+            window.addEventListener("focus", () => {
+                this.track("window_focus");
+            });
+
+            // -------- COPY DETECT ----------
+            document.addEventListener("copy", () => {
+                this.flagCheat("copy_attempt");
+            });
+
+            // -------- RIGHT CLICK DETECT ----------
+            document.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                this.flagCheat("right_click");
+            });
+
+            // -------- SCREENSHOT ATTEMPT ----------
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "PrintScreen") {
+                    this.flagCheat("print_screen");
+                }
+                if (e.ctrlKey && e.shiftKey && e.key === "S") {
+                    this.flagCheat("snipping_tool");
+                }
+            });
+
+            // -------- PAGE EXIT OR REFRESH ----------
+            window.addEventListener("beforeunload", () => {
+                this.track("exit_or_refresh");
+            });
         }
     }
 
-    // Expose to window
-    window.Analytics = new Analytics();
+    window.analytics = new Analytics();
 
 })(window);
